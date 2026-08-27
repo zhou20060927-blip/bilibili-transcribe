@@ -34,23 +34,27 @@ if os.path.isdir(NVIDIA_BIN_DIR):
     os.environ["PATH"] = NVIDIA_BIN_DIR + os.pathsep + os.environ["PATH"]
 
 WORK_DIR = Path(__file__).resolve().parent
-CLIPPINGS_DIR = Path("D:/obsidian/Clippings")
+# 输出目录：可用环境变量 OBSIDIAN_CLIPPINGS_DIR 覆盖（默认本机 Obsidian Clippings）
+CLIPPINGS_DIR = Path(os.environ.get("OBSIDIAN_CLIPPINGS_DIR", "D:/obsidian/Clippings"))
 
 # 本机代理（模型下载走代理更稳；抓 B 站直连即可）。仅在代理可用时设置，否则退回直连
+PROXY_ADDR = os.environ.get("BILI_PROXY", "http://127.0.0.1:7897")
 if not (os.environ.get("HTTPS_PROXY") or os.environ.get("HTTP_PROXY")):
     import socket
     try:
-        s = socket.create_connection(("127.0.0.1", 7897), timeout=2)
+        proxy_host = PROXY_ADDR.split("://")[-1]
+        host, port = proxy_host.rsplit(":", 1)
+        s = socket.create_connection((host, int(port)), timeout=2)
         s.close()
-        os.environ["HTTPS_PROXY"] = "http://127.0.0.1:7897"
-        os.environ["HTTP_PROXY"] = "http://127.0.0.1:7897"
-        os.environ["ALL_PROXY"] = "http://127.0.0.1:7897"
-        print("    检测到代理 127.0.0.1:7897，模型下载走代理")
+        os.environ["HTTPS_PROXY"] = PROXY_ADDR
+        os.environ["HTTP_PROXY"] = PROXY_ADDR
+        os.environ["ALL_PROXY"] = PROXY_ADDR
+        print(f"    检测到代理 {PROXY_ADDR}，模型下载走代理")
     except OSError:
         print("    未检测到代理，直连")
 
-# 模型缓存固定到 D 盘（用户要求模型放 D:\AI，不占 C 盘）
-MODELS_DIR = Path("D:/AI/Reasonix/models")
+# 模型缓存目录：可用环境变量 BILI_MODELS_DIR 覆盖（默认存 D 盘，避免占 C 盘）
+MODELS_DIR = Path(os.environ.get("BILI_MODELS_DIR", "D:/AI/Reasonix/models"))
 MODELS_DIR.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("HF_HOME", str(MODELS_DIR))
 

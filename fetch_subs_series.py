@@ -21,7 +21,7 @@ if sys.stdout and hasattr(sys.stdout, "reconfigure"):
 
 EDGE_PATH = r"C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
 USER_DATA = os.path.expanduser(r"~/AppData/Local/Microsoft/Edge/User Data")
-CLIPPINGS = Path("D:/obsidian/Clippings")
+CLIPPINGS = Path(os.environ.get("OBSIDIAN_CLIPPINGS_DIR", "D:/obsidian/Clippings"))
 
 
 def sanitize_filename(name: str, max_len: int = 80) -> str:

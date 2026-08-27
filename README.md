@@ -38,18 +38,18 @@ B 站很多视频有 **AI 自动字幕**（需登录态才能抓取）。抓字�
 
 **① 探测系列字幕清单**（区分哪些集有字幕/无字幕）
 ```bash
-venv\Scripts\python.exe detect_subs_via_edge.py
+python detect_subs_via_edge.py
 ```
 （需要 Edge 里 B 站已登录；会短暂弹出 Edge 窗口复用登录态，探测结果存 subs_result.json）
 
 **② 批量抓取字幕 → Markdown**（有字幕的集）
 ```bash
-venv\Scripts\python.exe fetch_subs_series.py --series BV1xqdrBeETc --series-name "计算机基础课程"
+python fetch_subs_series.py --series BV1xqdrBeETc --series-name "计算机基础课程"
 ```
 
 **③ 转录无字幕的集**
 ```bash
-venv\Scripts\python.exe transcribe.py --series BV1xqdrBeETc --p "3,5,8" --series-name "计算机基础课程"
+python transcribe.py --series BV1xqdrBeETc --p "3,5,8" --series-name "计算机基础课程"
 ```
 （`--p` 支持范围 `3-6`、单集 `4`、列表 `3,5,8`）
 
@@ -59,22 +59,22 @@ venv\Scripts\python.exe transcribe.py --series BV1xqdrBeETc --p "3,5,8" --series
 
 **① 多个独立链接**：一次传多个链接，挨个转
 ```bash
-venv\Scripts\python.exe transcribe.py "链接A" "链接B" "链接C"
+python transcribe.py "链接A" "链接B" "链接C"
 ```
 
 **② 整个多P系列**：给一个 BV 号，自动转全部 P 集，每集自动命名
 ```bash
-venv\Scripts\python.exe transcribe.py --series BV1xqdrBeETc --series-name "计算机基础课程"
+python transcribe.py --series BV1xqdrBeETc --series-name "计算机基础课程"
 ```
 
 **③ 指定 P 范围**：只转某几集（补缺/跳过已转的）
 ```bash
 # 只转第 4~6 集
-venv\Scripts\python.exe transcribe.py --series BV1xqdrBeETc --p 4-6 --series-name "计算机基础课程"
+python transcribe.py --series BV1xqdrBeETc --p 4-6 --series-name "计算机基础课程"
 # 只转第 4 集
-venv\Scripts\python.exe transcribe.py --series BV1xqdrBeETc --p 4-4 --series-name "计算机基础课程"
+python transcribe.py --series BV1xqdrBeETc --p 4-4 --series-name "计算机基础课程"
 # 从第 5 集转到末尾
-venv\Scripts\python.exe transcribe.py --series BV1xqdrBeETc --p 5- --series-name "计算机基础课程"
+python transcribe.py --series BV1xqdrBeETc --p 5- --series-name "计算机基础课程"
 ```
 
 > 系列模式文件名自动生成：`系列名 p04 子标题.md`（如 `计算机基础课程 p04 4-组成原理-计算机指令介绍.md`）
@@ -95,15 +95,17 @@ venv\Scripts\python.exe transcribe.py --series BV1xqdrBeETc --p 5- --series-name
 ```
 B站链接
  ① yt-dlp 抓音频(m4a) + 元信息（标题/UP主/日期/简介）
- ② faster-whisper GPU 转写（RTX 4060，medium 模型）
+ ② faster-whisper GPU 转写（NVIDIA GPU，medium 模型）
  ③ 生成 Clippings 风格 Markdown（frontmatter + [mm:ss] 时间戳 + bilibili iframe）
 ```
 
 ## 关键点
 
-- **模型**：`D:\AI\Reasonix\models\faster-whisper-medium\`（~1.5GB，一次下载以后复用）。换档位时首次会自动去 HuggingFace 下载（走 hf-mirror 镜像 + 代理 127.0.0.1:7897，模型存 D 盘不占 C 盘）。
+- **模型**：默认存到 `D:/AI/Reasonix/models/`（可设 `BILI_MODELS_DIR` 环境变量改路径）。首次运行自动从 HuggingFace 下载（国内可用 `HF_ENDPOINT=https://hf-mirror.com` 镜像），一次下载以后复用。
+- **输出目录**：默认 `D:/obsidian/Clippings`，可设 `OBSIDIAN_CLIPPINGS_DIR` 环境变量覆盖。
+- **代理**：自动探测本机代理（可用 `BILI_PROXY` 环境变量指定），不可用时直连。抓 B 站本身直连即可。
 - **GPU**：优先用 NVIDIA 显卡，失败自动回退 CPU。转写速度：1 小时视频 GPU 约 5~15 分钟。
-- **依赖**：项目内自带 ffmpeg（`ffmpeg\`）和 nvidia cublas DLL（`venv\`），无需系统级安装。
+- **依赖**：ffmpeg 需自行安装（或放 `ffmpeg/` 目录），GPU 版需 `nvidia-cublas-cu12` 等运行库。
 
 ## 文件结构
 
@@ -111,8 +113,8 @@ B站链接
 bilibili-transcribe/
 ├── transcribe.py      # 主脚本：抓取 + 转写 + 排版
 ├── run.bat            # 双击运行（粘贴链接即可）
-├── ffmpeg/            # 自带 ffmpeg + ffprobe（yt-dlp 转换用）
-└── venv/              # Python 虚拟环境（含 faster-whisper、nvidia cublas）
+├── ffmpeg/            # （可选）本地 ffmpeg，供 yt-dlp 转换
+└── (Python 环境)      # 需自行安装 faster-whisper、nvidia-cublas-cu12 等
 ```
 
 ## 生成笔记格式（对齐 Clippings 现有风格）
