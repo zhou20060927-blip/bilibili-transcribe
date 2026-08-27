@@ -1,0 +1,4 @@
+faster-whisper>=1.0
+yt-dlp>=2024.1.0
+playwright>=1.40
+pycryptodome>=3.20

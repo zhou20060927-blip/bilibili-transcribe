@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# 第三方二进制（ffmpeg 体积大，不纳入版本控制）
+ffmpeg/
+
+# 本地数据 / 中间产物
+bili_cookies.txt
+*.json
+!subs_result.json
+!requirements*.txt
+
+# 系统
+.DS_Store
+Thumbs.db
